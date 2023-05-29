@@ -1,4 +1,4 @@
-package reflectionAnnotation;
+package reflectionImplement;
 
 import objects.Generate;
 
@@ -10,11 +10,10 @@ import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static reflectionAnnotation.FieldTypes.*;
-
 public class BaseMethod {
+    Random random = new Random();
+
     public void fillObjectsFields(Object object) {
-        Random random = new Random();
         Class<?> clazz = object.getClass();
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
@@ -22,34 +21,31 @@ public class BaseMethod {
             if (annotation == null) {
                 continue;
             }
-            String nameType = String.valueOf(field.getType());
             final String setterName = "set" + field.getName().substring(0, 1).toUpperCase()
                     + field.getName().substring(1);
+            Object obj = null;
             try {
-                if (nameType.equals(TYPE_STRING.type)) {
-                    Method methodSetterName = clazz.getDeclaredMethod(setterName, field.getType());
-                    methodSetterName.invoke(object, generatingRandomString().substring(0, 1).toUpperCase()
-                                            + generatingRandomString().substring(1));
+                Method methodSetterName = clazz.getDeclaredMethod(setterName, field.getType());
+                if (field.getType().equals(String.class)) {
+                    obj = generateRandomString();
                 }
-                if (nameType.equals(TYPE_INT.type)) {
-                    Method methodSetterName = clazz.getDeclaredMethod(setterName, field.getType());
-                    methodSetterName.invoke(object, random.nextInt(1, 100));
+                if (field.getType().equals(int.class)) {
+                    obj = generateInt();
                 }
-                if (nameType.equals(TYPE_DATE.type)) {
-                    Method methodSetterName = clazz.getDeclaredMethod(setterName, field.getType());
-                    methodSetterName.invoke(object, timestamp());
+                if (field.getType().equals(Date.class)) {
+                    obj = generateDate();
                 }
-                if (nameType.equals(TYPE_BOOLEAN.type)) {
-                    Method methodSetterName = clazz.getDeclaredMethod(setterName, field.getType());
-                    methodSetterName.invoke(object, random.nextBoolean());
+                if (field.getType().equals(boolean.class)) {
+                    obj = generateBoolean();
                 }
+                methodSetterName.invoke(object, obj);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public static String generatingRandomString() {
+    private String generateRandomString() {
         int leftLimit = 97; // letter 'a'
         int rightLimit = 122; // letter 'z'
         int targetStringLength = 5;
@@ -60,7 +56,19 @@ public class BaseMethod {
                 .toString();
     }
 
-    public static Date timestamp() {
+    private Date generateDate() {
         return new Date(ThreadLocalRandom.current().nextInt() * 1000L);
+    }
+
+    private Object generateBoolean() {
+        final Object obj;
+        obj = random.nextBoolean();
+        return obj;
+    }
+
+    private Object generateInt() {
+        final Object obj;
+        obj = random.nextInt(1, 100);
+        return obj;
     }
 }
