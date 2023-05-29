@@ -11,11 +11,11 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class BaseMethod {
-    Random random = new Random();
+    private final Random random = new Random();
 
     public void fillObjectsFields(Object object) {
-        Class<?> clazz = object.getClass();
-        Field[] fields = clazz.getDeclaredFields();
+        final Class<?> clazz = object.getClass();
+        final Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             Annotation annotation = field.getDeclaredAnnotation(Generate.class);
             if (annotation == null) {
@@ -23,22 +23,19 @@ public class BaseMethod {
             }
             final String setterName = "set" + field.getName().substring(0, 1).toUpperCase()
                     + field.getName().substring(1);
-            Object obj = null;
+            final Object generation;
             try {
                 Method methodSetterName = clazz.getDeclaredMethod(setterName, field.getType());
                 if (field.getType().equals(String.class)) {
-                    obj = generateRandomString();
+                    generation = generateRandomString();
+                } else if (field.getType().equals(int.class)) {
+                    generation = generateInt();
+                } else if (field.getType().equals(Date.class)) {
+                    generation = generateDate();
+                } else {
+                    generation = generateBoolean();
                 }
-                if (field.getType().equals(int.class)) {
-                    obj = generateInt();
-                }
-                if (field.getType().equals(Date.class)) {
-                    obj = generateDate();
-                }
-                if (field.getType().equals(boolean.class)) {
-                    obj = generateBoolean();
-                }
-                methodSetterName.invoke(object, obj);
+                methodSetterName.invoke(object, generation);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
@@ -46,10 +43,10 @@ public class BaseMethod {
     }
 
     private String generateRandomString() {
-        int leftLimit = 97; // letter 'a'
-        int rightLimit = 122; // letter 'z'
+        final int leftLimit = 97; // letter 'a'
+        final int rightLimit = 122; // letter 'z'
         int targetStringLength = 5;
-        Random random = new Random();
+        final Random random = new Random();
         return random.ints(leftLimit, rightLimit + 1)
                 .limit(targetStringLength)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
@@ -61,14 +58,10 @@ public class BaseMethod {
     }
 
     private Object generateBoolean() {
-        final Object obj;
-        obj = random.nextBoolean();
-        return obj;
+        return random.nextBoolean();
     }
 
     private Object generateInt() {
-        final Object obj;
-        obj = random.nextInt(1, 100);
-        return obj;
+        return random.nextInt(1, 100);
     }
 }
